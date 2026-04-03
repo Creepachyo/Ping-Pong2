@@ -6,8 +6,15 @@ FPS = 60
 
 clock = time.Clock()
 
+speed_x, speed_y = 3, 3
+
 window = display.set_mode((wid, hei))
 backgroundcolor = (200, 255, 255)
+
+font.init()
+font = font.SysFont(None, 40)
+lose1 = font.render('Игрок слева проиграл', True, (180 , 0, 0))
+lose2 = font.render('Игрок справа проиграл', True, (180 , 0, 0))
 
 class GameSprite(sprite.Sprite):
     def __init__(self, player_image, player_x, player_y, player_size_x, player_size_y, speed):
@@ -43,23 +50,42 @@ class Player(GameSprite):
 
 player1 = Player('racket.png', 5, 350, 30, 130, 10)
 player2 = Player('racket.png', 570, 350, 30, 130, 10)
+ball = GameSprite('tenis_ball.png', 300, 350, 50, 50, 10)
 
 game = True
+
+finish = False
 
 while game:
     for e in event.get():
         if e.type == QUIT:
             game = False
+    if not finish:
 
-    window.fill(backgroundcolor)
+        window.fill(backgroundcolor)
 
-    player1.control_wasd()
-    player2.control_keys()
+        player1.control_wasd()
+        player2.control_keys()
+        ball.rect.x += speed_x
+        ball.rect.y += speed_y
 
-    player1.reset()
-    player2.reset()
+        if sprite.collide_rect(player1, ball) or sprite.collide_rect(player2, ball):
+            speed_x *= -1
+            speed_y *= 2
 
+        if ball.rect.y > hei - 50 or ball.rect.y < 0:
+            speed_y *= -1
 
+        if ball.rect.x > wid:
+            window.blit(lose2, (150, 350))
+            finish = True
+        elif ball.rect.x < 0:
+            window.blit(lose1, (150, 350))    
+            finish = True
+
+        player1.reset()
+        player2.reset()
+        ball.reset()
 
     display.update()
     clock.tick(FPS)
